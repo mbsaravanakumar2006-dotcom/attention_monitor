@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">Live Feed (Processed)</div>
+            <div class="card-body text-center">
+                <!-- Placeholder for video feed or canvas -->
+                <div id="video-container"
+                    style="background: #000; min-height: 480px; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <img src="{{ url_for('main.video_feed') }}" style="width: 100%; height: auto;"
+                        alt="Live Video Feed">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">Live Status</div>
+            <div class="card-body">
+                <h5 class="card-title">Class Attention Score</h5>
+                <h1 class="display-4 text-success" id="avg-score">--%</h1>
+                <hr>
+                <div id="student-list" class="list-group">
+                    <!-- Dynamic List of Students: Roll No: Name -->
+                    <div class="list-group-item">Waiting for cameras and identification...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Event Log</div>
+            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                <ul class="list-group list-group-flush" id="event-log">
+                    <!-- Events here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
