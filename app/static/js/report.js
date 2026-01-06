@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const time = new Date(event.timestamp).toLocaleTimeString();
 
                     let statusBadge = 'bg-secondary';
-                    if (event.event_type === 'Focused' || event.event_type === 'Attentive') statusBadge = 'bg-success';
+                    if (event.event_type === 'Focused' || event.event_type === 'Attentive' || event.event_type === 'Listening') statusBadge = 'bg-success';
                     else if (event.event_type === 'Distracted') statusBadge = 'bg-warning text-dark';
                     else if (event.event_type === 'Sleeping') statusBadge = 'bg-danger';
                     else if (event.event_type === 'Bored') statusBadge = 'bg-info text-dark';
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         date.getMinutes().toString().padStart(2, '0');
 
                     let score = 50; // Neutral
-                    if (event.event_type === 'Focused' || event.event_type === 'Attentive') score = 100;
+                    if (event.event_type === 'Focused' || event.event_type === 'Attentive' || event.event_type === 'Listening') score = 100;
                     if (event.event_type === 'Distracted') score = 30;
                     if (event.event_type === 'Sleeping') score = 0;
                     if (event.event_type === 'Bored') score = 40;

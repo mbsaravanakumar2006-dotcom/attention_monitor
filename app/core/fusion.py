@@ -26,7 +26,7 @@ class BehaviorFusion:
         posture_conf = posture_data.get('confidence', 1.0)
         
         # 2. State Logic with Confidence Filtering
-        final_state = "Attentive"
+        final_state = "Listening"
         reason = "Engaged"
         
         # Priority 1: Sleeping (High Confidence from Gaze Required)
@@ -54,7 +54,7 @@ class BehaviorFusion:
         # 3. Dynamic Attention Score (Normalized 0-100)
         # Weighting: Eye (60%), Head Pose (20%), Posture (20%)
         score_eye = 1.0 if not (ear < 0.23) else 0.3
-        score_head = 1.0 if gaze_status == 'Attentive' else 0.6 if gaze_status == 'Drowsy/Blinking' else 0.4
+        score_head = 1.0 if gaze_status == 'Listening' else 0.6 if gaze_status == 'Drowsy/Blinking' else 0.4
         score_posture = 1.0 if posture_status == 'Good' else 0.7 if posture_status == 'Leaning' else 0.5
         
         raw_score = (score_eye * 0.6) + (score_head * 0.2) + (score_posture * 0.2)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print("Test 1: Listening")
     res1 = fusion.fuse(
         face_data={'confidence': 0.95},
-        gaze_data={'status': 'Attentive', 'metrics': {'ear': 0.3}},
+        gaze_data={'status': 'Listening', 'metrics': {'ear': 0.3}},
         posture_data={'status': 'Good', 'confidence': 0.9},
         motion_level=0.5
     )

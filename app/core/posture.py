@@ -106,7 +106,7 @@ class PostureAnalyzer:
             if dx != 0:
                 shoulder_slope = dy/dx
                 shoulder_angle = math.degrees(math.atan(shoulder_slope))
-                if abs(shoulder_angle) > 15: # 15 degrees tilt
+                if abs(shoulder_angle) > 25: # 25 degrees tilt
                     state = "Leaning" if state == "Good" else state
                     reasons.append(f"Shoulders tilted {abs(shoulder_angle):.1f} deg")
             
