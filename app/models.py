@@ -13,7 +13,7 @@ class Student(db.Model):
 
 class AttentionEvent(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), index=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     event_type = db.Column(db.String(32)) # e.g., "distracted", "sleeping", "left_seat"
     duration = db.Column(db.Float) # How long the event lasted (optional)

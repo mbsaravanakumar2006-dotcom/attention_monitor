@@ -32,8 +32,8 @@ class GazeTracker:
         # Thresholds
         self.EAR_THRESHOLD = 0.22 
         self.SLEEP_DURATION = 3.0 # Seconds
-        self.HEAD_YAW_THRESHOLD = 45 # Degrees
-        self.HEAD_PITCH_THRESHOLD = 35 # Degrees
+        self.HEAD_YAW_THRESHOLD = 65 # Degrees (Relaxed from 55)
+        self.HEAD_PITCH_THRESHOLD = 60 # Degrees (Relaxed from 45)
 
     def get_ear(self, landmarks, indices):
         """Calculate Eye Aspect Ratio (EAR)."""

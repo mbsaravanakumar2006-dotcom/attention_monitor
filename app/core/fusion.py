@@ -39,14 +39,20 @@ class BehaviorFusion:
              final_state = "Distracted"
              reason = gaze_data.get('details', 'Looking away')
              
+        # Priority 3: Listening
+        elif gaze_status == 'Listening':
+             final_state = "Listening"
+             reason = "Focused on task"
+             
         # Priority 3: Posture Override (Only if confidence is high)
         elif posture_conf > self.MIN_CONFIDENCE:
             if posture_status == 'Head Down':
-                final_state = "Sleeping" if ear < 0.23 else "Distracted"
-                reason = "Head down"
+                # Distracted -> Listening if eyes are open
+                final_state = "Sleeping" if ear < 0.23 else "Listening"
+                reason = "Head down (Listening)" if final_state == "Listening" else "Head down"
             elif posture_status == 'Leaning':
-                final_state = "Distracted"
-                reason = "Slumping/Leaning"
+                final_state = "Listening"
+                reason = "Leaning (Listening)"
             elif posture_status == 'Slouching' and motion_level < 0.2:
                 final_state = "Bored"
                 reason = "Inactive & Slouching"

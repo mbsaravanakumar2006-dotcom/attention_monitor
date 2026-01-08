@@ -45,6 +45,8 @@ class AttentionDetector:
         
         # Runtime Data
         self.students_status = {} # {id: {status: '...', name: '...', score: 90}}
+        self.last_seen = {} # {id: timestamp}
+        self.ABSENCE_THRESHOLD = 7.0 # Seconds
         self.skip_frames = 2 # Process every Nth frame
         self.frame_count = 0
 
@@ -180,6 +182,9 @@ class AttentionDetector:
                     state = self._get_voted_state(student_id, raw_state)
                     score = fusion_res['attention_score']
                     
+                    # Update Last Seen
+                    self.last_seen[roll_no] = time.time()
+                    
                     # 5. Persistent Logging & Alerts
                     is_new_event = self.logger.log_event(roll_no, name, state)
                     
@@ -211,6 +216,37 @@ class AttentionDetector:
 
                 except Exception as e:
                     logger.error(f"Error in pipeline logic: {e}")
+
+            # --- Absence Detection ---
+            # Check every 10 frames to see if any previously active students are now missing
+            if self.frame_count % 10 == 0:
+                now = time.time()
+                for roll_no, last_time in list(self.last_seen.items()):
+                    if now - last_time > self.ABSENCE_THRESHOLD:
+                        # Student is missing
+                        current_status = self.students_status.get(roll_no, {})
+                        if current_status.get('status') != 'Distracted' and current_status.get('status') != 'Absent':
+                            name = current_status.get('name', 'Student')
+                            
+                            # Update status
+                            self.students_status[roll_no] = {
+                                'roll_no': roll_no,
+                                'name': name,
+                                'status': 'Distracted',
+                                'score': 0.0,
+                                'accuracy': 0,
+                                'details': 'Absent from class'
+                            }
+                            
+                            # Log to DB
+                            self.logger.log_event(roll_no, name, 'Distracted')
+                            
+                            # Alert
+                            socketio.emit('alert_event', {
+                                'roll_no': roll_no,
+                                'name': name,
+                                'message': f"{name} ({roll_no}) is absent from class!"
+                            })
 
             # --- SocketIO ---
             if self.frame_count % (self.skip_frames * 3) == 0:
