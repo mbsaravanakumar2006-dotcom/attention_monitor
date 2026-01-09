@@ -14,6 +14,7 @@
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Attention Trends</h5>
                     <div class="btn-group">
+                        <button id="clearData" class="btn btn-sm btn-outline-danger me-2">Clear Data</button>
                         <a href="/api/export_report" class="btn btn-sm btn-outline-light me-2">Download CSV</a>
                         <button id="refreshGraph" class="btn btn-sm btn-light">Refresh Data</button>
                     </div>
@@ -24,7 +25,12 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body position-relative">
+                    <div id="chart-loader" class="position-absolute top-50 start-50 translate-middle">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                     <div style="height: 400px; width: 100%;">
                         <canvas id="attentionChart"></canvas>
                     </div>
@@ -47,14 +53,13 @@
                                     <th>Timestamp</th>
                                     <th>Roll No</th>
                                     <th>Student Name</th>
-                                    <th>Event</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="report-event-log">
                                 <!-- Data will be populated by JS -->
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">Loading reports...</td>
+                                    <td colspan="4" class="text-center py-4">Loading reports...</td>
                                 </tr>
                             </tbody>
                         </table>

@@ -30,10 +30,12 @@ class GazeTracker:
         self.alpha = 0.4
         
         # Thresholds
-        self.EAR_THRESHOLD = 0.22 
+        self.EAR_THRESHOLD = 0.20 # Reduced from 0.22 to be more lenient
         self.SLEEP_DURATION = 3.0 # Seconds
-        self.HEAD_YAW_THRESHOLD = 65 # Degrees (Relaxed from 55)
-        self.HEAD_PITCH_THRESHOLD = 60 # Degrees (Relaxed from 45)
+        self.MAR_THRESHOLD = 0.12 # Threshold for "mouth open/moving"
+        self.TALKING_DURATION = 5.0 # Seconds
+        self.HEAD_YAW_THRESHOLD = 50 # Degrees (Reduced from 80 for more sensitivity)
+        self.HEAD_PITCH_THRESHOLD = 60 # Degrees (Reduced from 70)
 
     def get_ear(self, landmarks, indices):
         """Calculate Eye Aspect Ratio (EAR)."""
@@ -51,6 +53,21 @@ class GazeTracker:
         
         ear = (dist_v1 + dist_v2) / (2.0 * dist_h)
         return ear
+
+    def get_mar(self, landmarks):
+        """Calculate Mouth Aspect Ratio (MAR)."""
+        # Upper/Lower lip centers: 13, 14
+        # Left/Right corners: 61, 291
+        p13 = np.array([landmarks[13].x, landmarks[13].y])
+        p14 = np.array([landmarks[14].x, landmarks[14].y])
+        dist_v = np.linalg.norm(p13 - p14)
+        
+        p61 = np.array([landmarks[61].x, landmarks[61].y])
+        p291 = np.array([landmarks[291].x, landmarks[291].y])
+        dist_h = np.linalg.norm(p61 - p291)
+        
+        if dist_h == 0: return 0
+        return dist_v / dist_h
 
     def get_head_pose(self, landmarks, img_w, img_h):
         """Estimate Head Pose (Yaw, Pitch, Roll)."""
@@ -92,11 +109,11 @@ class GazeTracker:
             logger.debug(f"Pose estimation failed: {e}")
             return 0.0, 0.0, 0.0
 
-    def analyze(self, frame, student_id=None):
-        """Analyze attention state with Temporal Smoothing."""
+    def analyze(self, face_image, student_id=None):
+        """Analyze attention state for a single face crop."""
         try:
-            h, w, c = frame.shape
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            h, w, c = face_image.shape
+            rgb_frame = cv2.cvtColor(face_image, cv2.COLOR_BGR2RGB)
             results = self.face_mesh.process(rgb_frame)
             
             if not results.multi_face_landmarks:
@@ -119,9 +136,11 @@ class GazeTracker:
                 if student_id not in self.history:
                     self.history[student_id] = {
                         'eyes_closed_start': None,
+                        'talking_start': None,
                         'ear': raw_ear,
                         'yaw': raw_yaw,
-                        'pitch': raw_pitch
+                        'pitch': raw_pitch,
+                        'mar': self.get_mar(landmarks)
                     }
                 
                 h_data = self.history[student_id]
@@ -129,9 +148,13 @@ class GazeTracker:
                 h_data['yaw'] = self.alpha * raw_yaw + (1 - self.alpha) * h_data['yaw']
                 h_data['pitch'] = self.alpha * raw_pitch + (1 - self.alpha) * h_data['pitch']
                 
+                raw_mar = self.get_mar(landmarks)
+                h_data['mar'] = self.alpha * raw_mar + (1 - self.alpha) * h_data.get('mar', raw_mar)
+                
                 ear = h_data['ear']
                 yaw = h_data['yaw']
                 pitch = h_data['pitch']
+                mar = h_data['mar']
             else:
                 ear, yaw, pitch = raw_ear, raw_yaw, raw_pitch
 
@@ -161,13 +184,25 @@ class GazeTracker:
                     state = "Distracted"
                     details = "Looking up/down (Pitch)"
                 
+                # Check for Talking
+                if student_id:
+                    if mar > self.MAR_THRESHOLD:
+                        if self.history[student_id].get('talking_start') is None:
+                            self.history[student_id]['talking_start'] = current_time
+                        elif current_time - self.history[student_id]['talking_start'] > self.TALKING_DURATION:
+                            state = "Talking"
+                            details = "Talking/Mouth movement > 5s"
+                    else:
+                        self.history[student_id]['talking_start'] = None
+                
             return {
                 'status': state,
                 'details': details,
                 'metrics': {
                     'ear': ear,
                     'yaw': yaw,
-                    'pitch': pitch
+                    'pitch': pitch,
+                    'mar': mar
                 }
             }
             

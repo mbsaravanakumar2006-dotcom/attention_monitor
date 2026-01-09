@@ -34,25 +34,41 @@ class BehaviorFusion:
              final_state = "Sleeping"
              reason = "Eyes closed > 3s"
              
+        # Priority 1.5: Talking (Distracted if > 5s)
+        elif gaze_status == 'Talking':
+             final_state = "Distracted"
+             reason = "Talking > 5s"
+             
         # Priority 2: Distracted (Head / Gaze)
         elif gaze_status == 'Distracted':
-             final_state = "Distracted"
-             reason = gaze_data.get('details', 'Looking away')
+            yaw = abs(gaze_metrics.get('yaw', 0))
+            # If they turned their head significantly, they "turned somewhere"
+            # Reduced from 85 to 55 for better sensitivity to neighbor interaction
+            if yaw > 55:
+                final_state = "Distracted"
+                reason = "Looking away"
+            # If it's just pitch or moderate yaw, they are likely still "Listening"
+            else:
+                final_state = "Listening"
+                reason = "Passive Listening"
              
         # Priority 3: Listening
         elif gaze_status == 'Listening':
              final_state = "Listening"
              reason = "Focused on task"
              
-        # Priority 3: Posture Override (Only if confidence is high)
+        # Priority 4: Posture Override (Only if confidence is high)
         elif posture_conf > self.MIN_CONFIDENCE:
             if posture_status == 'Head Down':
-                # Distracted -> Listening if eyes are open
+                # Head down with eyes open is listening (reading notes)
                 final_state = "Sleeping" if ear < 0.23 else "Listening"
                 reason = "Head down (Listening)" if final_state == "Listening" else "Head down"
             elif posture_status == 'Leaning':
                 final_state = "Listening"
                 reason = "Leaning (Listening)"
+            elif posture_status == 'Face Covered':
+                final_state = "Out of Sight"
+                reason = "Face covered"
             elif posture_status == 'Slouching' and motion_level < 0.2:
                 final_state = "Bored"
                 reason = "Inactive & Slouching"
@@ -60,7 +76,7 @@ class BehaviorFusion:
         # 3. Dynamic Attention Score (Normalized 0-100)
         # Weighting: Eye (60%), Head Pose (20%), Posture (20%)
         score_eye = 1.0 if not (ear < 0.23) else 0.3
-        score_head = 1.0 if gaze_status == 'Listening' else 0.6 if gaze_status == 'Drowsy/Blinking' else 0.4
+        score_head = 1.0 if final_state == 'Listening' else 0.6 if gaze_status == 'Drowsy/Blinking' else 0.4
         score_posture = 1.0 if posture_status == 'Good' else 0.7 if posture_status == 'Leaning' else 0.5
         
         raw_score = (score_eye * 0.6) + (score_head * 0.2) + (score_posture * 0.2)
@@ -96,12 +112,20 @@ if __name__ == "__main__":
     )
     print(res2)
     
-    # Test Case 3: Distracted
-    print("\nTest 3: Distracted")
+    # Test Case 3: Turned Away (Extreme Yaw)
+    print("\nTest 3: Turned Away (Extreme Yaw)")
     res3 = fusion.fuse(
         face_data={'confidence': 0.9},
-        gaze_data={'status': 'Distracted', 'details': 'Looking Left'},
-        posture_data={'status': 'Good', 'confidence': 0.9},
-        motion_level=0.6
+        gaze_data={'status': 'Distracted', 'metrics': {'yaw': 85, 'pitch': 10}, 'details': 'Looking Right'},
+        posture_data={'status': 'Good', 'confidence': 0.9}
     )
     print(res3)
+
+    # Test Case 4: Looking Down (Reading/Listening)
+    print("\nTest 4: Looking Down (Reading/Listening)")
+    res4 = fusion.fuse(
+        face_data={'confidence': 0.9},
+        gaze_data={'status': 'Distracted', 'metrics': {'yaw': 10, 'pitch': 65}, 'details': 'Looking Down'},
+        posture_data={'status': 'Good', 'confidence': 0.9}
+    )
+    print(res4)

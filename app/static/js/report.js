@@ -56,12 +56,16 @@ document.addEventListener("DOMContentLoaded", function () {
         hideError();
 
         // 1. Fetch Summary for Chart
+        const chartLoader = document.getElementById('chart-loader');
+        if (chartLoader) chartLoader.classList.remove('d-none');
+
         fetch('/api/attention_summary')
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response.json();
             })
             .then(summaryData => {
+                if (chartLoader) chartLoader.classList.add('d-none');
                 if (!summaryData || summaryData.length === 0) {
                     console.log('No summary data available');
                     chart.data.labels = [];
@@ -75,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 chart.update();
             })
             .catch(error => {
+                if (chartLoader) chartLoader.classList.add('d-none');
                 console.error('Error fetching summary:', error);
                 showError('Failed to load chart data. Please try again later.');
             });
@@ -87,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(data => {
                 if (!data || data.length === 0) {
-                    eventLogTable.innerHTML = '<tr><td colspan="5" class="text-center">No data available yet. Start the monitor to gather data.</td></tr>';
+                    eventLogTable.innerHTML = '<tr><td colspan="4" class="text-center">No data available yet. Start the monitor to gather data.</td></tr>';
                     return;
                 }
 
@@ -108,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         <td>${time}</td>
                         <td><strong>${event.roll_no}</strong></td>
                         <td>${event.name}</td>
-                        <td>${type}</td>
                         <td><span class="badge ${statusBadge}">${type}</span></td>
                     `;
                     fragment.appendChild(row);
@@ -124,7 +128,37 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
+    const clearBtn = document.getElementById('clearData');
+
     refreshBtn.addEventListener('click', updateReports);
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            if (confirm("Are you sure you want to DELETE ALL DATA? This action cannot be undone.")) {
+                fetch('/api/clear_data', { method: 'POST' })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(`Server returned ${response.status}: ${text.substring(0, 50)}...`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert(data.message);
+                            updateReports(); // Refresh UI
+                        } else {
+                            alert("Error: " + data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Request Failed: " + err.message);
+                    });
+            }
+        });
+    }
 
     // Initial load
     updateReports();

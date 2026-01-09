@@ -39,7 +39,7 @@ class EventLogger:
         if not roll_no:
             return False
 
-        current_time = datetime.utcnow()
+        current_time = datetime.now()
         
         # Check cache to avoid spamming the DB
         if roll_no in self.state_cache:

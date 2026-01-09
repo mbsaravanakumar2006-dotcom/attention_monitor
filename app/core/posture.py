@@ -73,6 +73,11 @@ class PostureAnalyzer:
                         landmarks[self.mp_pose.PoseLandmark.LEFT_EAR.value].y]
             right_ear = [landmarks[self.mp_pose.PoseLandmark.RIGHT_EAR.value].x,
                          landmarks[self.mp_pose.PoseLandmark.RIGHT_EAR.value].y]
+            
+            left_wrist = [landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                          landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+            right_wrist = [landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST.value].x,
+                           landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                          
             # --- Analysis Logic ---
             
@@ -109,6 +114,16 @@ class PostureAnalyzer:
                 if abs(shoulder_angle) > 25: # 25 degrees tilt
                     state = "Leaning" if state == "Good" else state
                     reasons.append(f"Shoulders tilted {abs(shoulder_angle):.1f} deg")
+            
+            # 3. Hand over Face Detection
+            # If wrists are near nose or ears
+            dist_l_wrist_nose = math.sqrt((left_wrist[0]-nose[0])**2 + (left_wrist[1]-nose[1])**2)
+            dist_r_wrist_nose = math.sqrt((right_wrist[0]-nose[0])**2 + (right_wrist[1]-nose[1])**2)
+            
+            # Using normalized coordinates, 0.1 is roughly face height relative to body
+            if dist_l_wrist_nose < 0.12 or dist_r_wrist_nose < 0.12:
+                state = "Face Covered"
+                reasons.append("Hands hiding face")
             
             # 3. Slouching (Forward Hunch) - Hard from 2D front view
             # Proxy: Distance between ears and shoulders becomes small?
