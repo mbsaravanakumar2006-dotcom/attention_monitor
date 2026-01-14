@@ -281,16 +281,25 @@ class AttentionDetector:
                             # Update Last Seen
                             self.last_seen[student_id] = time.time()
                             
-                            # 5. Persistent Logging & Alerts
-                            is_new_event = self.logger.log_event(student_id, name, state)
+                            # 5. Persistent Logging & Alerts (Stabilized)
+                            # log_event now returns True only when the state has STABILIZED (3s)
+                            self.logger.log_event(student_id, name, state)
                             
-                            # Trigger Alert if state changed to anomalous
-                            if is_new_event and state in ['Distracted', 'Sleeping', 'Bored']:
-                                socketio.emit('alert_event', {
-                                    'roll_no': student_id,
-                                    'name': name,
-                                    'message': f"{name} ({student_id}) is {state}!"
-                                })
+                            # Real-time Alert Logic (Un-stabilized for responsiveness)
+                            # We check the RAW voted state for immediate UI feedback/alerts
+                            if not hasattr(self, '_prev_ui_state'): self._prev_ui_state = {}
+                            prev_ui_state = self._prev_ui_state.get(student_id)
+                            
+                            if state != prev_ui_state:
+                                self._prev_ui_state[student_id] = state
+                                
+                                # Alert on anomalous states
+                                if state in ['Distracted', 'Sleeping', 'Bored', 'Out of Sight']:
+                                    socketio.emit('alert_event', {
+                                        'roll_no': student_id,
+                                        'name': name,
+                                        'message': f"{name} ({student_id}) is {state}!"
+                                    })
                             
                             # Update status map
                             self.students_status[student_id] = {
@@ -335,7 +344,18 @@ class AttentionDetector:
                                 'score': 0.0,
                                 'accuracy': 0
                             }
+                            # Stabilized DB logging
                             self.logger.log_event(student_id, name, 'Out of Sight')
+                            
+                            # Real-time alert
+                            if not hasattr(self, '_prev_ui_state'): self._prev_ui_state = {}
+                            if self._prev_ui_state.get(student_id) != 'Out of Sight':
+                                self._prev_ui_state[student_id] = 'Out of Sight'
+                                socketio.emit('alert_event', {
+                                    'roll_no': student_id,
+                                    'name': name,
+                                    'message': f"{name} ({student_id}) is Out of Sight!"
+                                })
                         
                         # Draw a marker at last known location
                         x, y = int(cX * scale_x), int(cY * scale_y)

@@ -1,38 +1,46 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
+<div class="row animate-fade-in-up">
     <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header">Live Feed (Processed)</div>
-            <div class="card-body text-center">
-                <!-- Placeholder for video feed or canvas -->
+        <div class="glass-card mb-4" style="overflow: hidden;">
+            <div class="card-header border-bottom border-secondary bg-transparent py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-camera-video me-2"></i>Live Feed (Processed)</h5>
+            </div>
+            <div class="card-body p-0">
                 <div id="video-container"
-                    style="background: #000; min-height: 480px; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    style="background: #000; min-height: 480px; width: 100%; display: flex; align-items: center; justify-content: center;">
                     <img src="{{ url_for('main.video_feed') }}" style="width: 100%; height: auto;"
                         alt="Live Video Feed">
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">Live Status</div>
+        <div class="glass-card mb-4">
+            <div class="card-header border-bottom border-secondary bg-transparent py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2"></i>Live Status</h5>
+            </div>
             <div class="card-body">
-                <h5 class="card-title">Class Attention Score</h5>
-                <h1 class="display-4 text-success" id="avg-score">--%</h1>
-                <hr>
-                <div id="student-list" class="list-group">
-                    <!-- Dynamic List of Students: Roll No: Name -->
-                    <div class="list-group-item">Waiting for cameras and identification...</div>
+                <p class="text-muted small text-uppercase fw-bold mb-1">Class Attention Score</p>
+                <h1 class="display-4 fw-black mb-3" id="avg-score"
+                    style="background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    --%</h1>
+                <hr class="border-secondary opacity-25">
+                <div id="student-list" class="list-group list-group-flush bg-transparent">
+                    <!-- Dynamic List of Students -->
+                    <div class="list-group-item bg-transparent text-muted py-3">
+                        <i class="bi bi-hourglass-split me-2"></i>Waiting for cameras...
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">Event Log</div>
+        <div class="glass-card">
+            <div class="card-header border-bottom border-secondary bg-transparent py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul me-2"></i>Event Log</h5>
+            </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                 <ul class="list-group list-group-flush" id="event-log">
                     <!-- Events here -->
@@ -42,6 +50,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>

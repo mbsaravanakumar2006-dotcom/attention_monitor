@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid animate-fade-in-up">
     <div class="row">
         <div class="col-12">
-            <h2 class="mb-4">Attention Reports & Analytics</h2>
+            <h2 class="mb-4 fw-bold">Attention Reports & Analytics</h2>
         </div>
     </div>
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Attention Trends</h5>
+            <div class="glass-card mb-4 shadow-sm">
+                <div
+                    class="card-header border-bottom border-secondary bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2"></i>Attention Trends</h5>
                     <div class="btn-group">
-                        <button id="clearData" class="btn btn-sm btn-outline-danger me-2">Clear Data</button>
-                        <a href="/api/export_report" class="btn btn-sm btn-outline-light me-2">Download CSV</a>
-                        <button id="refreshGraph" class="btn btn-sm btn-light">Refresh Data</button>
+                        <button id="clearData" class="btn btn-sm btn-outline-danger me-2"
+                            style="border-radius: 6px;">Clear Data</button>
+                        <a href="/api/export_report" class="btn btn-sm btn-outline-light me-2"
+                            style="border-radius: 6px;">Download CSV</a>
+                        <button id="refreshGraph" class="btn btn-sm glow-button">Refresh Data</button>
                     </div>
                 </div>
                 <div id="report-error-container" class="px-3 pt-3 d-none">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <div class="alert alert-danger alert-dismissible fade show bg-transparent border-danger text-danger"
+                        role="alert">
                         <span id="report-error-msg"></span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="card-body position-relative">
@@ -41,25 +46,33 @@
 
     <div class="row">
         <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Detailed Event Log</h5>
+            <div class="glass-card shadow-sm">
+                <div
+                    class="card-header border-bottom border-secondary bg-transparent d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>Detailed Event Log</h5>
+                    <div class="search-container" style="width: 300px;">
+                        <input type="text" id="reportSearch"
+                            class="form-control form-control-sm bg-dark border-secondary text-white"
+                            placeholder="Search by name or roll no..."
+                            style="border-radius: 8px; background: rgba(15, 23, 42, 0.5) !important;">
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>Roll No</th>
-                                    <th>Student Name</th>
-                                    <th>Status</th>
+                        <table class="table table-hover mb-0 text-white">
+                            <thead class="bg-dark text-muted sticky-top">
+                                <tr class="border-secondary">
+                                    <th class="border-secondary">Interval (Start - End)</th>
+                                    <th class="border-secondary">Roll No</th>
+                                    <th class="border-secondary">Student Name</th>
+                                    <th class="border-secondary">Status</th>
+                                    <th class="border-secondary">Duration</th>
                                 </tr>
                             </thead>
                             <tbody id="report-event-log">
                                 <!-- Data will be populated by JS -->
                                 <tr>
-                                    <td colspan="4" class="text-center py-4">Loading reports...</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">Loading reports...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -69,6 +82,19 @@
         </div>
     </div>
 </div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+    }
+
+    .table td,
+    .table th {
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}

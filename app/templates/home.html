@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <div class="hero-section text-center py-5">
+        <h1 class="display-3 mb-4 animate-fade-in-down"
+            style="background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; letter-spacing: 2px;">
+            CLASSROOM ENGAGEMENT
+        </h1>
+        <p class="lead mb-5 animate-fade-in-up" style="color: var(--text-muted);">
+            Revolutionizing classroom dynamics with real-time AI-powered attention and engagement monitoring.
+        </p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg mx-2 glow-button">
+                Go to Dashboard
+            </a>
+            <a href="{{ url_for('main.report') }}" class="btn btn-outline-light btn-lg mx-2"
+                style="border-radius: 8px;">
+                View Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="features-section py-5">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card glass-card h-100 p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-eye"
+                            style="font-size: 2.5rem; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    </div>
+                    <h3>Attention Tracking</h3>
+                    <p style="color: var(--text-muted);">Real-time monitoring of student focus and gaze to identify
+                        levels of engagement during lessons.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card glass-card h-100 p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-graph-up-arrow"
+                            style="font-size: 2.5rem; background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    </div>
+                    <h3>Behavioral Insights</h3>
+                    <p style="color: var(--text-muted);">Advanced analysis of postures and facial expressions to detect
+                        distractions, sleepiness, or boredom.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-card glass-card h-100 p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-file-earmark-bar-graph"
+                            style="font-size: 2.5rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    </div>
+                    <h3>Actionable Reports</h3>
+                    <p style="color: var(--text-muted);">Detailed performance analytics and reporting to help educators
+                        improve classroom outcomes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="project-description py-5">
+        <div class="glass-card p-4">
+            <h2 class="mb-4">About the Project</h2>
+            <div style="color: var(--text-muted);">
+                <p>Our Classroom Engagement Monitor uses state-of-the-art computer vision and deep learning models to
+                    provide educators with a clear understanding of student participation. By analyzing visual cues like
+                    head pose, eye contact, and body language, the system helps identify when students are most engaged
+                    and when they might need extra support or a change in teaching style.</p>
+                <p>This project aims to bridge the gap between traditional teaching and modern instructional needs,
+                    ensuring no student is left behind due to unnoticed disengagement.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .home-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
