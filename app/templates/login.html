@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-4">
+        <div class="card glass-card shadow-lg p-4">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-lock-fill display-4 text-primary"></i>
+                <h2 class="mt-2 fw-bold">Admin Login</h2>
+                <p class="text-muted">Enter credentials to access dashboard</p>
+            </div>
+
+            <form method="POST">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+
+                <div class="mb-3">
+                    <label for="username" class="form-label fw-bold">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text glass-input-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text" class="form-control glass-input" id="username" name="username" required
+                            placeholder="Admin username">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="password" class="form-label fw-bold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text glass-input-text"><i class="bi bi-key-fill"></i></span>
+                        <input type="password" class="form-control glass-input" id="password" name="password" required
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-link text-decoration-none text-muted">Back to
+                        Home</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 0 10px 10px 0 !important;
+    }
+
+    .glass-input-text {
+        background: rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px 0 0 10px !important;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border: none;
+        transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

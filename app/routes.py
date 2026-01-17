@@ -1,17 +1,56 @@
-from flask import Blueprint, render_template, jsonify, Response
+from flask import Blueprint, render_template, jsonify, Response, request, redirect, url_for, session, flash
 from app import db
-from app.models import AttentionEvent
+from app.models import AttentionEvent, User
 from app.core.detector import gen_frames
+from functools import wraps
 
 from sqlalchemy.orm import joinedload
 
 main = Blueprint('main', __name__)
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'user_id' in session:
+        return redirect(url_for('main.dashboard'))
+        
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(username=username).first()
+        
+        if user and user.check_password(password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            flash('Successfully logged in!', 'success')
+            return redirect(url_for('main.dashboard'))
+        else:
+            flash('Invalid username or password.', 'danger')
+            
+    return render_template('login.html')
+
+@main.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    session.pop('username', None)
+    flash('Successfully logged out.', 'info')
+    return redirect(url_for('main.index'))
 
 @main.route('/')
 def index():
     return render_template('home.html')
 
 @main.route('/dashboard')
+@login_required
 def dashboard():
     return render_template('dashboard.html')
 
@@ -23,6 +62,7 @@ def stats():
     return jsonify([e.to_dict() for e in events])
 
 @main.route('/report')
+@login_required
 def report():
     return render_template('report.html')
 
