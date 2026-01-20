@@ -46,7 +46,7 @@ class AttentionDetector:
         self.last_seen = {} # {id: timestamp}
         self.id_map = {} # {tracker_id: {'roll_no': ..., 'name': ...}}
         self.identity_history = {} # {tracker_id: [roll_no1, roll_no2, ...]}
-        self.MAX_IDENTITY_HISTORY = 20
+        self.MAX_IDENTITY_HISTORY = 40
         
         self.ABSENCE_THRESHOLD = 7.0 # Seconds
         self.skip_frames = 2 # Process every Nth frame
@@ -56,11 +56,26 @@ class AttentionDetector:
         self.analysis_stagger = 4 # Detailed analysis every N frames per student
         self.student_analysis_count = {} # {id: counter}
 
+    def _get_student_map(self):
+        """Fetch roll_no to name mapping from DB."""
+        from app.models import Student
+        try:
+            return {s.roll_no: s.name for s in Student.query.all()}
+        except Exception as e:
+            logger.error(f"Error fetching student map: {e}")
+            return {}
+
     def _load_models(self, app=None):
         """Lazy load heavy AI models only when needed."""
         if not self.models_loaded:
             print("Loading Face Recognizer...")
             self.face_rec = FaceRecognizer()
+            # Initial train if needed, with names from DB
+            if app:
+                with app.app_context():
+                    stu_map = self._get_student_map()
+                    if self.face_rec._should_retrain():
+                        self.face_rec.train(roll_to_name_map=stu_map)
             print("Loading Posture Analyzer...")
             self.posture = PostureAnalyzer()
             print("Loading Gaze Tracker...")

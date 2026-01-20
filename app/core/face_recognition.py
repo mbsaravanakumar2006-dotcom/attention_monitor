@@ -117,22 +117,27 @@ class FaceRecognizer:
         # 1. Horizontal Flip
         variations.append(cv2.flip(face_img, 1))
         
-        # 2. Rotations (+/- 10 degrees)
+        # 2. Rotations (+/- 15 degrees)
         h, w = face_img.shape[:2]
         center = (w // 2, h // 2)
-        for angle in [-10, 10]:
+        for angle in [-15, -7, 7, 15]:
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
             rotated = cv2.warpAffine(face_img, M, (w, h))
             variations.append(rotated)
             
-        # 3. Brightness & Contrast adjustments
-        for alpha in [0.7, 0.9, 1.1, 1.3]: # More varied brightness
-            for beta in [-20, 20]: # Add contrast/offset
-                adjusted = cv2.convertScaleAbs(face_img, alpha=alpha, beta=beta)
-                variations.append(adjusted)
+        # 3. Brightness & Gamma adjustments
+        for alpha in [0.6, 0.8, 1.0, 1.2, 1.4]: # Brightness/Contrast
+            adjusted = cv2.convertScaleAbs(face_img, alpha=alpha, beta=0)
+            variations.append(adjusted)
+            
+        # Gamma correction for low-light/over-exposure
+        for gamma in [0.5, 1.5, 2.0]:
+            invGamma = 1.0 / gamma
+            table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+            variations.append(cv2.LUT(face_img, table))
         
         # 4. Add Gaussian Noise (Simulate webcam grain)
-        noise = np.random.normal(0, 5, face_img.shape).astype(np.uint8)
+        noise = np.random.normal(0, 10, face_img.shape).astype(np.uint8)
         variations.append(cv2.add(face_img, noise))
             
         return variations
@@ -169,9 +174,10 @@ class FaceRecognizer:
             
         return face_crops
 
-    def train(self):
+    def train(self, roll_to_name_map=None):
         """
         Train the recognizer with balanced samples and quality checks.
+        roll_to_name_map: optional dict {roll_no: full_name} to override filename parsing
         """
         face_samples = []
         ids = []
@@ -186,7 +192,7 @@ class FaceRecognizer:
             return
 
         # Target samples per student for balance
-        SAMPLES_PER_STUDENT = 30
+        SAMPLES_PER_STUDENT = 60
 
         for filename in image_files:
             basename = filename.split('.')[0]
@@ -198,7 +204,13 @@ class FaceRecognizer:
                 
             if roll_no not in roll_to_int:
                 roll_to_int[roll_no] = current_int_id
-                self.label_map[current_int_id] = {'roll_no': roll_no, 'name': name}
+                
+                # Use name from map if available, else use parsed name
+                display_name = name
+                if roll_to_name_map and roll_no in roll_to_name_map:
+                    display_name = roll_to_name_map[roll_no]
+                
+                self.label_map[current_int_id] = {'roll_no': roll_no, 'name': display_name}
                 current_int_id += 1
             
             label_id = roll_to_int[roll_no]
@@ -259,10 +271,14 @@ class FaceRecognizer:
             label_id, confidence = self.recognizer.predict(preprocessed)
             
             # LBPH confidence: 0 is perfect, >100 is poor
-            # Reduced from 85 to 65 for much higher selectivity (reduces false positives)
-            if confidence < 65:
+            # Threshold relaxed to 88 based on logs showing many missed matches in 70-85 range
+            CONF_THRESHOLD = 88 
+            
+            if confidence < CONF_THRESHOLD:
                 student_data = self.label_map.get(label_id, {'roll_no': 'Unknown', 'name': 'Unknown'})
                 norm_conf = max(0, (100 - confidence) / 100)
+                
+                logger.info(f"Match found: {student_data['roll_no']} ({student_data['name']}) with confidence {confidence:.2f}")
                 
                 results.append({
                     'status': 'success',
@@ -273,7 +289,8 @@ class FaceRecognizer:
                     'box': box
                 })
             else:
-               results.append({
+                logger.warning(f"Face recognized but confidence too low ({confidence:.2f}). Labeled as Unknown.")
+                results.append({
                     'status': 'unknown', 
                     'roll_no': 'Unknown',
                     'name': 'Unknown',

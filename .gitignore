@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+instance/
+*.db
+.env
+.venv
+env/
+venv/
+*.jpg
+*.png
+trainer.xml
+trainer_meta.json

@@ -111,6 +111,10 @@ document.addEventListener("DOMContentLoaded", function () {
         eventLogTable.appendChild(fragment);
     }
 
+    const studentSelect = document.getElementById('studentSelect');
+
+    let selectedRollNo = "";
+
     function updateReports() {
         hideError();
 
@@ -118,13 +122,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const chartLoader = document.getElementById('chart-loader');
         if (chartLoader) chartLoader.classList.remove('d-none');
 
-        fetch('/api/attention_summary')
+        const url = selectedRollNo ? `/api/attention_summary?roll_no=${selectedRollNo}` : '/api/attention_summary';
+
+        fetch(url)
             .then(response => {
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 return response.json();
             })
             .then(summaryData => {
                 if (chartLoader) chartLoader.classList.add('d-none');
+
+                const title = selectedRollNo ? `Attention Trends for ${selectedRollNo}` : 'Class Attention Level (%)';
+                chart.data.datasets[0].label = title;
+
                 if (!summaryData || summaryData.length === 0) {
                     chart.data.labels = [];
                     chart.data.datasets[0].data = [];
@@ -157,6 +167,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Event Listeners
+    if (studentSelect) {
+        studentSelect.addEventListener('change', function () {
+            selectedRollNo = this.value;
+            updateReports();
+        });
+
+        // Load students list
+        fetch('/api/students_list')
+            .then(res => res.json())
+            .then(students => {
+                students.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.roll_no;
+                    opt.innerText = `${s.name} (${s.roll_no})`;
+                    studentSelect.appendChild(opt);
+                });
+            });
+    }
+
     if (searchInput) {
         searchInput.addEventListener('input', renderTable);
     }
