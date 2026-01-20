@@ -6,8 +6,11 @@ class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     roll_no = db.Column(db.String(20), index=True, unique=True)
     name = db.Column(db.String(64), index=True)
+    department = db.Column(db.String(64))
+    year = db.Column(db.String(10))
+    image_path = db.Column(db.String(256))
     
-    events = db.relationship('AttentionEvent', backref='student', lazy='dynamic')
+    events = db.relationship('AttentionEvent', backref='student', lazy='dynamic', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Student {self.name}>'

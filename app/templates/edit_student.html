@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center mb-4">
+                <a href="{{ url_for('main.students') }}" class="btn btn-outline-light btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h1 class="display-5 mb-0"
+                    style="background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700;">
+                    Edit Student
+                </h1>
+            </div>
+
+            <div class="glass-card p-4">
+                <form action="{{ url_for('main.edit_student', id=student.id) }}" method="POST"
+                    enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="roll_no" class="form-label">Student ID / Roll No</label>
+                            <input type="text" class="form-control" id="roll_no" name="roll_no"
+                                value="{{ student.roll_no }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="Computer Science" {% if student.department=='Computer Science'
+                                    %}selected{% endif %}>Computer Science</option>
+                                <option value="Information Technology" {% if
+                                    student.department=='Information Technology' %}selected{% endif %}>Information
+                                    Technology</option>
+                                <option value="Electronics" {% if student.department=='Electronics' %}selected{% endif
+                                    %}>Electronics</option>
+                                <option value="Mechanical" {% if student.department=='Mechanical' %}selected{% endif %}>
+                                    Mechanical</option>
+                                <option value="Civil" {% if student.department=='Civil' %}selected{% endif %}>Civil
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="year" class="form-label">Year</label>
+                            <select class="form-select" id="year" name="year" required>
+                                <option value="I Year" {% if student.year=='I Year' %}selected{% endif %}>I Year
+                                </option>
+                                <option value="II Year" {% if student.year=='II Year' %}selected{% endif %}>II Year
+                                </option>
+                                <option value="III Year" {% if student.year=='III Year' %}selected{% endif %}>III Year
+                                </option>
+                                <option value="IV Year" {% if student.year=='IV Year' %}selected{% endif %}>IV Year
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="image" class="form-label">Update Face Image (Optional)</label>
+                        <div class="d-flex align-items-center mb-2">
+                            {% if student.image_path %}
+                            <img src="{{ url_for('static', filename=student.image_path) }}" class="rounded-circle me-3"
+                                style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--accent-color);">
+                            {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
+                                style="width: 50px; height: 50px; background: rgba(255,255,255,0.1); border: 2px solid var(--accent-color); color: var(--accent-color);">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
+                            <span class="text-muted small">Current Photo</span>
+                        </div>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text text-muted">Only upload if you want to change the existing face image.
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg glow-button">
+                            Update Student Records
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
